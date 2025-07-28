@@ -3,7 +3,8 @@
 #           CasaOS Installer Script v0.4.15#
 #   GitHub: https://github.com/IceWhaleTech/CasaOS
 #   Issues: https://github.com/IceWhaleTech/CasaOS/issues
-#   Requires: bash, mv, rm, tr, grep, sed, curl/wget, tar, smartmontools, parted, ntfs-3g, net-tools
+#   Requires: bash, mv, rm, tr, grep, sed, curl/wget, tar, smartmontools, parted
+, ntfs-3g, net-tools
 #
 #   This script installs CasaOS to your system.
 #   Usage:
@@ -50,8 +51,10 @@ source /etc/os-release
 readonly MINIMUM_DISK_SIZE_GB="5"
 readonly MINIMUM_MEMORY="400"
 readonly MINIMUM_DOCKER_VERSION="20"
-readonly CASA_DEPANDS_PACKAGE=('wget' 'curl' 'smartmontools' 'parted' 'ntfs-3g' 'net-tools' 'udevil' 'samba' 'cifs-utils' 'mergerfs' 'unzip')
-readonly CASA_DEPANDS_COMMAND=('wget' 'curl' 'smartctl' 'parted' 'ntfs-3g' 'netstat' 'udevil' 'smbd' 'mount.cifs' 'mount.mergerfs' 'unzip')
+readonly CASA_DEPANDS_PACKAGE=('wget' 'curl' 'smartmontools' 'parted' 'ntfs-3g'
+'net-tools' 'udevil' 'samba' 'cifs-utils' 'mergerfs' 'unzip')
+readonly CASA_DEPANDS_COMMAND=('wget' 'curl' 'smartctl' 'parted' 'ntfs-3g' 'nets
+tat' 'udevil' 'smbd' 'mount.cifs' 'mount.mergerfs' 'unzip')
 
 # SYSTEM INFO
 PHYSICAL_MEMORY=$(LC_ALL=C free -m | awk '/Mem:/ { print $2 }')
@@ -62,7 +65,8 @@ readonly FREE_DISK_BYTES
 
 readonly FREE_DISK_GB=$((FREE_DISK_BYTES / 1024 / 1024))
 
-LSB_DIST=$( ([ -n "${ID_LIKE}" ] && echo "${ID_LIKE}") || ([ -n "${ID}" ] && echo "${ID}"))
+LSB_DIST=$( ([ -n "${ID_LIKE}" ] && echo "${ID_LIKE}") || ([ -n "${ID}" ] && ech
+o "${ID}"))
 readonly LSB_DIST
 
 DIST=$(echo "${ID}")
@@ -93,7 +97,8 @@ readonly aCOLOUR=(
     '\e[33m'       # Yellow             | Emphasis
 )
 
-readonly GREEN_LINE=" ${aCOLOUR[0]}─────────────────────────────────────────────────────$COLOUR_RESET"
+readonly GREEN_LINE=" ${aCOLOUR[0]}─────────────────────────────────────────────
+────────$COLOUR_RESET"
 readonly GREEN_BULLET=" ${aCOLOUR[0]}-$COLOUR_RESET"
 readonly GREEN_SEPARATOR="${aCOLOUR[0]}:$COLOUR_RESET"
 
@@ -101,7 +106,7 @@ readonly GREEN_SEPARATOR="${aCOLOUR[0]}:$COLOUR_RESET"
 TARGET_ARCH=""
 TMP_ROOT=/tmp/casaos-installer
 REGION="UNKNOWN"
-CASA_DOWNLOAD_DOMAIN="https://ghfast.top/https://github.com/"
+CASA_DOWNLOAD_DOMAIN="https://get.casaos.io/https://github.com/"
 
 trap 'onCtrlC' INT
 onCtrlC() {
@@ -127,17 +132,21 @@ onCtrlC() {
 Show() {
     # OK
     if (($1 == 0)); then
-        echo -e "${aCOLOUR[2]}[$COLOUR_RESET${aCOLOUR[0]}  OK  $COLOUR_RESET${aCOLOUR[2]}]$COLOUR_RESET $2"
+        echo -e "${aCOLOUR[2]}[$COLOUR_RESET${aCOLOUR[0]}  OK  $COLOUR_RESET${aC
+OLOUR[2]}]$COLOUR_RESET $2"
     # FAILED
     elif (($1 == 1)); then
-        echo -e "${aCOLOUR[2]}[$COLOUR_RESET${aCOLOUR[3]}FAILED$COLOUR_RESET${aCOLOUR[2]}]$COLOUR_RESET $2"
+        echo -e "${aCOLOUR[2]}[$COLOUR_RESET${aCOLOUR[3]}FAILED$COLOUR_RESET${aC
+OLOUR[2]}]$COLOUR_RESET $2"
         exit 1
     # INFO
     elif (($1 == 2)); then
-        echo -e "${aCOLOUR[2]}[$COLOUR_RESET${aCOLOUR[0]} INFO $COLOUR_RESET${aCOLOUR[2]}]$COLOUR_RESET $2"
+        echo -e "${aCOLOUR[2]}[$COLOUR_RESET${aCOLOUR[0]} INFO $COLOUR_RESET${aC
+OLOUR[2]}]$COLOUR_RESET $2"
     # NOTICE
     elif (($1 == 3)); then
-        echo -e "${aCOLOUR[2]}[$COLOUR_RESET${aCOLOUR[4]}NOTICE$COLOUR_RESET${aCOLOUR[2]}]$COLOUR_RESET $2"
+        echo -e "${aCOLOUR[2]}[$COLOUR_RESET${aCOLOUR[4]}NOTICE$COLOUR_RESET${aC
+OLOUR[2]}]$COLOUR_RESET $2"
     fi
 }
 
@@ -159,7 +168,8 @@ Clear_Term() {
     # Without an input terminal, there is no point in doing this.
     [[ -t 0 ]] || return
 
-    # Printing terminal height - 1 newlines seems to be the fastest method that is compatible with all terminal types.
+    # Printing terminal height - 1 newlines seems to be the fastest method that
+is compatible with all terminal types.
     lines=$(tput lines) i newlines
     local lines
 
@@ -186,10 +196,13 @@ exist_file() {
 # 0 Get download url domain
 # To solve the problem that Chinese users cannot access github.
 Get_Download_Url_Domain() {
-    # Use ipconfig.io/country and https://ifconfig.io/country_code to get the country code
-    REGION=$(${sudo_cmd} curl --connect-timeout 2 -s ipconfig.io/country || echo "")
+    # Use ipconfig.io/country and https://ifconfig.io/country_code to get the co
+untry code
+    REGION=$(${sudo_cmd} curl --connect-timeout 2 -s ipconfig.io/country || echo
+ "")
     if [ "${REGION}" = "" ]; then
-       REGION=$(${sudo_cmd} curl --connect-timeout 2 -s https://ifconfig.io/country_code || echo "")
+       REGION=$(${sudo_cmd} curl --connect-timeout 2 -s https://ifconfig.io/coun
+try_code || echo "")
     fi
     if [[ "${REGION}" = "China" ]] || [[ "${REGION}" = "CN" ]]; then
         CASA_DOWNLOAD_DOMAIN="https://casaos.oss-cn-shanghai.aliyuncs.com/"
@@ -215,15 +228,24 @@ Check_Arch() {
     esac
     Show 0 "Your hardware architecture is : $UNAME_M"
     CASA_PACKAGES=(
-        "${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-Gateway/releases/download/v0.4.9-alpha4/linux-${TARGET_ARCH}-casaos-gateway-v0.4.9-alpha4.tar.gz"
-"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-MessageBus/releases/download/v0.4.4-3-alpha2/linux-${TARGET_ARCH}-casaos-message-bus-v0.4.4-3-alpha2.tar.gz"
-"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-UserService/releases/download/v0.4.8/linux-${TARGET_ARCH}-casaos-user-service-v0.4.8.tar.gz"
-"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-LocalStorage/releases/download/v0.4.4/linux-${TARGET_ARCH}-casaos-local-storage-v0.4.4.tar.gz"
-"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-AppManagement/releases/download/v0.4.10-alpha2/linux-${TARGET_ARCH}-casaos-app-management-v0.4.10-alpha2.tar.gz"
-"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS/releases/download/v0.4.15/linux-${TARGET_ARCH}-casaos-v0.4.15.tar.gz"
-"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-CLI/releases/download/v0.4.4-3-alpha1/linux-${TARGET_ARCH}-casaos-cli-v0.4.4-3-alpha1.tar.gz"
-"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-UI/releases/download/v0.4.20/linux-all-casaos-v0.4.20.tar.gz"
-"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-AppStore/releases/download/v0.4.5/linux-all-appstore-v0.4.5.tar.gz"
+        "${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-Gateway/releases/download/v0
+.4.9-alpha4/linux-${TARGET_ARCH}-casaos-gateway-v0.4.9-alpha4.tar.gz"
+"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-MessageBus/releases/download/v0.4.4-
+3-alpha2/linux-${TARGET_ARCH}-casaos-message-bus-v0.4.4-3-alpha2.tar.gz"
+"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-UserService/releases/download/v0.4.8
+/linux-${TARGET_ARCH}-casaos-user-service-v0.4.8.tar.gz"
+"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-LocalStorage/releases/download/v0.4.
+4/linux-${TARGET_ARCH}-casaos-local-storage-v0.4.4.tar.gz"
+"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-AppManagement/releases/download/v0.4
+.10-alpha2/linux-${TARGET_ARCH}-casaos-app-management-v0.4.10-alpha2.tar.gz"
+"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS/releases/download/v0.4.15/linux-${TA
+RGET_ARCH}-casaos-v0.4.15.tar.gz"
+"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-CLI/releases/download/v0.4.4-3-alpha
+1/linux-${TARGET_ARCH}-casaos-cli-v0.4.4-3-alpha1.tar.gz"
+"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-UI/releases/download/v0.4.20/linux-a
+ll-casaos-v0.4.20.tar.gz"
+"${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/CasaOS-AppStore/releases/download/v0.4.5/li
+nux-all-appstore-v0.4.5.tar.gz"
     )
 }
 
@@ -261,7 +283,8 @@ Check_Distribution() {
 
     *)
         sType=3
-        notice="We have not tested it on this system and it may fail to install."
+        notice="We have not tested it on this system and it may fail to install.
+"
         ;;
     esac
     Show ${sType} "Your Linux Distribution is : ${DIST} ${notice}"
@@ -304,7 +327,9 @@ Check_Memory() {
 # 5 Check Disk
 Check_Disk() {
     if [[ "${FREE_DISK_GB}" -lt "${MINIMUM_DISK_SIZE_GB}" ]]; then
-        echo -e "${aCOLOUR[4]}Recommended free disk space is greater than ${MINIMUM_DISK_SIZE_GB}GB, Current free disk space is ${aCOLOUR[3]}${FREE_DISK_GB}GB${COLOUR_RESET}${aCOLOUR[4]}.\nContinue installation?${COLOUR_RESET}"
+        echo -e "${aCOLOUR[4]}Recommended free disk space is greater than ${MINI
+MUM_DISK_SIZE_GB}GB, Current free disk space is ${aCOLOUR[3]}${FREE_DISK_GB}GB${
+COLOUR_RESET}${aCOLOUR[4]}.\nContinue installation?${COLOUR_RESET}"
         select yn in "Yes" "No"; do
             case $yn in
             [yY][eE][sS] | [yY])
@@ -316,7 +341,8 @@ Check_Disk() {
                 exit 1
                 ;;
             esac
-        done < /dev/tty  # < /dev/tty is used to read the input from the terminal
+        done < /dev/tty  # < /dev/tty is used to read the input from the termina
+l
     else
         Show 0 "Disk capacity check passed."
     fi
@@ -324,8 +350,10 @@ Check_Disk() {
 
 # Check Port Use
 Check_Port() {
-    TCPListeningnum=$(${sudo_cmd} netstat -an | grep ":$1 " | awk '$1 == "tcp" && $NF == "LISTEN" {print $0}' | wc -l)
-    UDPListeningnum=$(${sudo_cmd} netstat -an | grep ":$1 " | awk '$1 == "udp" && $NF == "0.0.0.0:*" {print $0}' | wc -l)
+    TCPListeningnum=$(${sudo_cmd} netstat -an | grep ":$1 " | awk '$1 == "tcp" &
+& $NF == "LISTEN" {print $0}' | wc -l)
+    UDPListeningnum=$(${sudo_cmd} netstat -an | grep ":$1 " | awk '$1 == "udp" &
+& $NF == "0.0.0.0:*" {print $0}' | wc -l)
     ((Listeningnum = TCPListeningnum + UDPListeningnum))
     if [[ $Listeningnum == 0 ]]; then
         echo "0"
@@ -336,7 +364,8 @@ Check_Port() {
 
 # Get an available port
 Get_Port() {
-    CurrentPort=$(${sudo_cmd} cat ${CASA_CONF_PATH} | grep HttpPort | awk '{print $3}')
+    CurrentPort=$(${sudo_cmd} cat ${CASA_CONF_PATH} | grep HttpPort | awk '{prin
+t $3}')
     if [[ $CurrentPort == "$Port" ]]; then
         for PORT in {80..65536}; do
             if [[ $(Check_Port "$PORT") == 0 ]]; then
@@ -375,12 +404,14 @@ Install_Depends() {
         cmd=${CASA_DEPANDS_COMMAND[i]}
         if [[ ! -x $(${sudo_cmd} which "$cmd") ]]; then
             packagesNeeded=${CASA_DEPANDS_PACKAGE[i]}
-            Show 2 "Install the necessary dependencies: \e[33m$packagesNeeded \e[0m"
+            Show 2 "Install the necessary dependencies: \e[33m$packagesNeeded \e
+[0m"
             GreyStart
             if [ -x "$(command -v apk)" ]; then
                 ${sudo_cmd} apk add --no-cache "$packagesNeeded"
             elif [ -x "$(command -v apt-get)" ]; then
-                ${sudo_cmd} apt-get -y -qq install "$packagesNeeded" --no-upgrade
+                ${sudo_cmd} apt-get -y -qq install "$packagesNeeded" --no-upgrad
+e
             elif [ -x "$(command -v dnf)" ]; then
                 ${sudo_cmd} dnf install "$packagesNeeded"
             elif [ -x "$(command -v zypper)" ]; then
@@ -392,7 +423,8 @@ Install_Depends() {
             elif [ -x "$(command -v paru)" ]; then
                 ${sudo_cmd} paru -S "$packagesNeeded"
             else
-                Show 1 "Package manager not found. You must manually install: \e[33m$packagesNeeded \e[0m"
+                Show 1 "Package manager not found. You must manually install: \e
+[33m$packagesNeeded \e[0m"
             fi
             ColorReset
         fi
@@ -404,7 +436,8 @@ Check_Dependency_Installation() {
         cmd=${CASA_DEPANDS_COMMAND[i]}
         if [[ ! -x $(${sudo_cmd} which "$cmd") ]]; then
             packagesNeeded=${CASA_DEPANDS_PACKAGE[i]}
-            Show 1 "Dependency \e[33m$packagesNeeded \e[0m installation failed, please try again manually!"
+            Show 1 "Dependency \e[33m$packagesNeeded \e[0m installation failed,
+please try again manually!"
             exit 1
         fi
     done
@@ -426,11 +459,14 @@ Check_Docker_Running() {
 #Check Docker Installed and version
 Check_Docker_Install() {
     if [[ -x "$(command -v docker)" ]]; then
-        Docker_Version=$(${sudo_cmd} docker version --format '{{.Server.Version}}')
+        Docker_Version=$(${sudo_cmd} docker version --format '{{.Server.Version}
+}')
         if [[ $? -ne 0 ]]; then
             Install_Docker
         elif [[ ${Docker_Version:0:2} -lt "${MINIMUM_DOCKER_VERSION}" ]]; then
-            Show 1 "Recommended minimum Docker version is \e[33m${MINIMUM_DOCKER_VERSION}.xx.xx\e[0m,\Current Docker version is \e[33m${Docker_Version}\e[0m,\nPlease uninstall current Docker and rerun the CasaOS installation script."
+            Show 1 "Recommended minimum Docker version is \e[33m${MINIMUM_DOCKER
+_VERSION}.xx.xx\e[0m,\Current Docker version is \e[33m${Docker_Version}\e[0m,\nP
+lease uninstall current Docker and rerun the CasaOS installation script."
             exit 1
         else
             Show 0 "Current Docker version is ${Docker_Version}."
@@ -443,18 +479,22 @@ Check_Docker_Install() {
 # Check Docker installed
 Check_Docker_Install_Final() {
     if [[ -x "$(command -v docker)" ]]; then
-        Docker_Version=$(${sudo_cmd} docker version --format '{{.Server.Version}}')
+        Docker_Version=$(${sudo_cmd} docker version --format '{{.Server.Version}
+}')
         if [[ $? -ne 0 ]]; then
             Install_Docker
         elif [[ ${Docker_Version:0:2} -lt "${MINIMUM_DOCKER_VERSION}" ]]; then
-            Show 1 "Recommended minimum Docker version is \e[33m${MINIMUM_DOCKER_VERSION}.xx.xx\e[0m,\Current Docker version is \e[33m${Docker_Version}\e[0m,\nPlease uninstall current Docker and rerun the CasaOS installation script."
+            Show 1 "Recommended minimum Docker version is \e[33m${MINIMUM_DOCKER
+_VERSION}.xx.xx\e[0m,\Current Docker version is \e[33m${Docker_Version}\e[0m,\nP
+lease uninstall current Docker and rerun the CasaOS installation script."
             exit 1
         else
             Show 0 "Current Docker version is ${Docker_Version}."
             Check_Docker_Running
         fi
     else
-        Show 1 "Installation failed, please run 'curl -fsSL https://get.docker.com | bash' and rerun the CasaOS installation script."
+        Show 1 "Installation failed, please run 'curl -fsSL https://get.docker.c
+om | bash' and rerun the CasaOS installation script."
         exit 1
     fi
 }
@@ -467,7 +507,8 @@ Install_Docker() {
     fi
     GreyStart
     if [[ "${REGION}" = "China" ]] || [[ "${REGION}" = "CN" ]]; then
-        ${sudo_cmd} curl -fsSL https://play.cuse.eu.org/get_docker.sh | bash -s docker --mirror Aliyun
+        ${sudo_cmd} curl -fsSL https://play.cuse.eu.org/get_docker.sh | bash -s
+docker --mirror Aliyun
     else
         ${sudo_cmd} curl -fsSL https://get.docker.com | bash
     fi
@@ -484,7 +525,8 @@ Install_Docker() {
 Install_rclone_from_source() {
   ${sudo_cmd} wget -qO ./install.sh https://rclone.org/install.sh
   if [[ "${REGION}" = "China" ]] || [[ "${REGION}" = "CN" ]]; then
-    sed -i 's/downloads.rclone.org/casaos.oss-cn-shanghai.aliyuncs.com/g' ./install.sh
+    sed -i 's/downloads.rclone.org/casaos.oss-cn-shanghai.aliyuncs.com/g' ./inst
+all.sh
   else
     sed -i 's/downloads.rclone.org/get.casaos.io/g' ./install.sh
   fi
@@ -545,8 +587,10 @@ Configuration_Addons() {
         }
 
         ${sudo_cmd} sed -i '/exfat/s/, nonempty//g' "$PREFIX"${UDEVIL_CONF_PATH}
-        ${sudo_cmd} sed -i '/default_options/s/, noexec//g' "$PREFIX"${UDEVIL_CONF_PATH}
-        ${sudo_cmd} sed -i '/^ARGS/cARGS="--mount-options nosuid,nodev,noatime --ignore-label EFI"' "$PREFIX"${DEVMON_CONF_PATH}
+        ${sudo_cmd} sed -i '/default_options/s/, noexec//g' "$PREFIX"${UDEVIL_CO
+NF_PATH}
+        ${sudo_cmd} sed -i '/^ARGS/cARGS="--mount-options nosuid,nodev,noatime -
+-ignore-label EFI"' "$PREFIX"${DEVMON_CONF_PATH}
 
         # Add and start Devmon service
         GreyStart
@@ -562,25 +606,29 @@ DownloadAndInstallCasaOS() {
     if [ -z "${BUILD_DIR}" ]; then
         ${sudo_cmd} rm -rf ${TMP_ROOT}
         mkdir -p ${TMP_ROOT} || Show 1 "Failed to create temporary directory"
-        TMP_DIR=$(${sudo_cmd} mktemp -d -p ${TMP_ROOT} || Show 1 "Failed to create temporary directory")
+        TMP_DIR=$(${sudo_cmd} mktemp -d -p ${TMP_ROOT} || Show 1 "Failed to crea
+te temporary directory")
 
         pushd "${TMP_DIR}"
 
         for PACKAGE in "${CASA_PACKAGES[@]}"; do
             Show 2 "Downloading ${PACKAGE}..."
             GreyStart
-            ${sudo_cmd} wget -t 3 -q --show-progress -c  "${PACKAGE}" || Show 1 "Failed to download package"
+            ${sudo_cmd} wget -t 3 -q --show-progress -c  "${PACKAGE}" || Show 1
+"Failed to download package"
             ColorReset
         done
 
         for PACKAGE_FILE in linux-*.tar.gz; do
             Show 2 "Extracting ${PACKAGE_FILE}..."
             GreyStart
-            ${sudo_cmd} tar zxf "${PACKAGE_FILE}" || Show 1 "Failed to extract package"
+            ${sudo_cmd} tar zxf "${PACKAGE_FILE}" || Show 1 "Failed to extract p
+ackage"
             ColorReset
         done
 
-        BUILD_DIR=$(${sudo_cmd} realpath -e "${TMP_DIR}"/build || Show 1 "Failed to find build directory")
+        BUILD_DIR=$(${sudo_cmd} realpath -e "${TMP_DIR}"/build || Show 1 "Failed
+ to find build directory")
 
         popd
     fi
@@ -589,40 +637,49 @@ DownloadAndInstallCasaOS() {
         if ${sudo_cmd} systemctl --quiet is-active "${SERVICE}"; then
             Show 2 "Stopping ${SERVICE}..."
             GreyStart
-            ${sudo_cmd} systemctl stop "${SERVICE}" || Show 3 "Service ${SERVICE} does not exist."
+            ${sudo_cmd} systemctl stop "${SERVICE}" || Show 3 "Service ${SERVICE
+} does not exist."
             ColorReset
         fi
     done
 
-    MIGRATION_SCRIPT_DIR=$(realpath -e "${BUILD_DIR}"/scripts/migration/script.d || Show 1 "Failed to find migration script directory")
+    MIGRATION_SCRIPT_DIR=$(realpath -e "${BUILD_DIR}"/scripts/migration/script.d
+ || Show 1 "Failed to find migration script directory")
 
     for MIGRATION_SCRIPT in "${MIGRATION_SCRIPT_DIR}"/*.sh; do
         Show 2 "Running ${MIGRATION_SCRIPT}..."
 
-        ${sudo_cmd} bash "${MIGRATION_SCRIPT}" || Show 1 "Failed to run migration script"
+        ${sudo_cmd} bash "${MIGRATION_SCRIPT}" || Show 1 "Failed to run migratio
+n script"
 
     done
 
 
     Show 2 "Installing CasaOS..."
-    SYSROOT_DIR=$(realpath -e "${BUILD_DIR}"/sysroot || Show 1 "Failed to find sysroot directory")
+    SYSROOT_DIR=$(realpath -e "${BUILD_DIR}"/sysroot || Show 1 "Failed to find s
+ysroot directory")
 
     # Generate manifest for uninstallation
     MANIFEST_FILE=${BUILD_DIR}/sysroot/var/lib/casaos/manifest
-    ${sudo_cmd} touch "${MANIFEST_FILE}" || Show 1 "Failed to create manifest file"
+    ${sudo_cmd} touch "${MANIFEST_FILE}" || Show 1 "Failed to create manifest fi
+le"
 
     GreyStart
-    find "${SYSROOT_DIR}" -type f | ${sudo_cmd} cut -c ${#SYSROOT_DIR}- | ${sudo_cmd} cut -c 2- | ${sudo_cmd} tee "${MANIFEST_FILE}" >/dev/null || Show 1 "Failed to create manifest file"
+    find "${SYSROOT_DIR}" -type f | ${sudo_cmd} cut -c ${#SYSROOT_DIR}- | ${sudo
+_cmd} cut -c 2- | ${sudo_cmd} tee "${MANIFEST_FILE}" >/dev/null || Show 1 "Faile
+d to create manifest file"
 
     ${sudo_cmd} cp -rf "${SYSROOT_DIR}"/* / || Show 1 "Failed to install CasaOS"
     ColorReset
 
-    SETUP_SCRIPT_DIR=$(realpath -e "${BUILD_DIR}"/scripts/setup/script.d || Show 1 "Failed to find setup script directory")
+    SETUP_SCRIPT_DIR=$(realpath -e "${BUILD_DIR}"/scripts/setup/script.d || Show
+ 1 "Failed to find setup script directory")
 
     for SETUP_SCRIPT in "${SETUP_SCRIPT_DIR}"/*.sh; do
         Show 2 "Running ${SETUP_SCRIPT}..."
         GreyStart
-        ${sudo_cmd} bash "${SETUP_SCRIPT}" || Show 1 "Failed to run setup script"
+        ${sudo_cmd} bash "${SETUP_SCRIPT}" || Show 1 "Failed to run setup script
+"
         ColorReset
     done
 
@@ -632,15 +689,18 @@ DownloadAndInstallCasaOS() {
     fi
 
     # Modify app store configuration
-    sed -i "s#https://github.com/IceWhaleTech/_appstore/#${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/_appstore/#g" "$PREFIX/etc/casaos/app-management.conf"
+    sed -i "s#https://get.casaos.io/https://github.com/IceWhaleTech/_appstore/#${CASA_DOWNLOAD_DOMAIN}
+IceWhaleTech/_appstore/#g" "$PREFIX/etc/casaos/app-management.conf"
 
     #Download Uninstall Script
     if [[ -f $PREFIX/tmp/casaos-uninstall ]]; then
         ${sudo_cmd} rm -rf "$PREFIX/tmp/casaos-uninstall"
     fi
-    ${sudo_cmd} curl -fsSLk "$CASA_UNINSTALL_URL" >"$PREFIX/tmp/casaos-uninstall"
+    ${sudo_cmd} curl -fsSLk "$CASA_UNINSTALL_URL" >"$PREFIX/tmp/casaos-uninstall
+"
     ${sudo_cmd} cp -rf "$PREFIX/tmp/casaos-uninstall" $CASA_UNINSTALL_PATH || {
-        Show 1 "Download uninstall script failed, Please check if your internet connection is working and retry."
+        Show 1 "Download uninstall script failed, Please check if your internet
+connection is working and retry."
         exit 1
     }
 
@@ -651,7 +711,8 @@ DownloadAndInstallCasaOS() {
     for SERVICE in "${CASA_SERVICES[@]}"; do
         Show 2 "Starting ${SERVICE}..."
         GreyStart
-        ${sudo_cmd} systemctl start "${SERVICE}" || Show 3 "Service ${SERVICE} does not exist."
+        ${sudo_cmd} systemctl start "${SERVICE}" || Show 3 "Service ${SERVICE} d
+oes not exist."
         ColorReset
     done
 }
@@ -664,7 +725,8 @@ Clean_Temp_Files() {
 Check_Service_status() {
     for SERVICE in "${CASA_SERVICES[@]}"; do
         Show 2 "Checking ${SERVICE}..."
-        if [[ $(${sudo_cmd} systemctl is-active "${SERVICE}") == "active" ]]; then
+        if [[ $(${sudo_cmd} systemctl is-active "${SERVICE}") == "active" ]]; th
+en
             Show 0 "${SERVICE} is running."
         else
             Show 1 "${SERVICE} is not running, Please reinstall."
@@ -676,9 +738,11 @@ Check_Service_status() {
 # Get the physical NIC IP
 Get_IPs() {
     PORT=$(${sudo_cmd} cat ${CASA_CONF_PATH} | grep port | sed 's/port=//')
-    ALL_NIC=$($sudo_cmd ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)")
+    ALL_NIC=$($sudo_cmd ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/
+net/)")
     for NIC in ${ALL_NIC}; do
-        IP=$($sudo_cmd ifconfig "${NIC}" | grep inet | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | sed -e 's/addr://g')
+        IP=$($sudo_cmd ifconfig "${NIC}" | grep inet | grep -v 127.0.0.1 | grep
+-v inet6 | awk '{print $2}' | sed -e 's/addr://g')
         if [[ -n $IP ]]; then
             if [[ "$PORT" -eq "80" ]]; then
                 echo -e "${GREEN_BULLET} http://$IP (${NIC})"
@@ -694,19 +758,23 @@ Welcome_Banner() {
     CASA_TAG=$(casaos -v)
 
     echo -e "${GREEN_LINE}${aCOLOUR[1]}"
-    echo -e " CasaOS ${CASA_TAG}${COLOUR_RESET} is running at${COLOUR_RESET}${GREEN_SEPARATOR}"
+    echo -e " CasaOS ${CASA_TAG}${COLOUR_RESET} is running at${COLOUR_RESET}${GR
+EEN_SEPARATOR}"
     echo -e "${GREEN_LINE}"
     Get_IPs
     echo -e " Open your browser and visit the above address."
     echo -e "${GREEN_LINE}"
     echo -e ""
-    echo -e " ${aCOLOUR[2]}CasaOS Project  : https://github.com/IceWhaleTech/CasaOS"
-    echo -e " ${aCOLOUR[2]}CasaOS Team     : https://github.com/IceWhaleTech/CasaOS#maintainers"
+    echo -e " ${aCOLOUR[2]}CasaOS Project  : https://github.com/IceWhaleTech/Cas
+aOS"
+    echo -e " ${aCOLOUR[2]}CasaOS Team     : https://github.com/IceWhaleTech/Cas
+aOS#maintainers"
     echo -e " ${aCOLOUR[2]}CasaOS Discord  : https://discord.gg/knqAbbBbeX"
     echo -e " ${aCOLOUR[2]}Website         : https://www.casaos.io"
     echo -e " ${aCOLOUR[2]}Online Demo     : http://demo.casaos.io"
     echo -e ""
-    echo -e " ${COLOUR_RESET}${aCOLOUR[1]}Uninstall       ${COLOUR_RESET}: casaos-uninstall"
+    echo -e " ${COLOUR_RESET}${aCOLOUR[1]}Uninstall       ${COLOUR_RESET}: casao
+s-uninstall"
     echo -e "${COLOUR_RESET}"
 }
 
@@ -719,7 +787,8 @@ usage() {
     cat <<-EOF
                 Usage: install.sh [options]
                 Valid options are:
-                    -p <build_dir>          Specify build directory (Local install)
+                    -p <build_dir>          Specify build directory (Local insta
+ll)
                     -h                      Show this help message and exit
         EOF
     exit "$1"
