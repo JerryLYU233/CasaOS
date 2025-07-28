@@ -101,7 +101,7 @@ readonly GREEN_SEPARATOR="${aCOLOUR[0]}:$COLOUR_RESET"
 TARGET_ARCH=""
 TMP_ROOT=/tmp/casaos-installer
 REGION="UNKNOWN"
-CASA_DOWNLOAD_DOMAIN="https://github.com/"
+CASA_DOWNLOAD_DOMAIN="https://ghfast.top/https://github.com/"
 
 trap 'onCtrlC' INT
 onCtrlC() {
@@ -632,7 +632,7 @@ DownloadAndInstallCasaOS() {
     fi
     
     # Modify app store configuration
-    sed -i "s#https://github.com/IceWhaleTech/_appstore/#${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/_appstore/#g" "$PREFIX/etc/casaos/app-management.conf"
+    sed -i "s#https://ghfast.top/https://github.com/IceWhaleTech/_appstore/#${CASA_DOWNLOAD_DOMAIN}IceWhaleTech/_appstore/#g" "$PREFIX/etc/casaos/app-management.conf"
 
     #Download Uninstall Script
     if [[ -f $PREFIX/tmp/casaos-uninstall ]]; then
